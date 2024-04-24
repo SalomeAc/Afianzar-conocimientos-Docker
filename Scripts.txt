@@ -1,0 +1,66 @@
+Scripts para la creación e instanciación de la base de datos
+
+sudo docker network create pg_network   // Crea una red/network llamada pg_network
+
+sudo docker volume create pg_db	    // Crea un volumen de docker llamado pg_db donde se van a almacenar los datos de 
+la base de datos
+
+sudo docker run -d --name pg_server --network pg_network -v pg_db:/var/lib/postgresql/data -e POSTGRES_DB=tarea_db 
+-e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=tarea postgres:15-bookworm   // Crea un contenedor "pg_server" que 
+ejecuta una instancia de versión 15-bookworm, configurada con la base de datos "tarea_bd" y un usuario administrador
+con contraseña "tarea". Este contenedor se conecta a la red "pg_network" y utiliza un volumen para almacenar datos
+
+sudo docker run -d --name pg_client --network pg_network -v pg_db:/var/lib/postgresql/data -e PGPASSWORD=tarea 
+postgres:15     // Crea un contenedor que ejecuta una instancia cliente conectada a la misma red que el servidor y
+utilizando el mismo volumen para acceder a la base de datos. Se configura una variable de entorno PGPASSWORD para 
+establecer la contraseña de autenticación al conectarse al servidor PostgreSQL.
+
+sudo docker container ls    // Permite ver todos los contenedores Docker que esán actualmente en ejecución
+
+sudo docker volume ls   //  Muestra todos los volúmenes de Docker que existen en el sistema
+
+sudo docker network ls  // Muestra todas las redes de Docker que existen en el sistema
+
+sudo docker ps --filter "volume=pg_db"  // Lista los contenedores Docker en ejecución y que están utilizando el 
+volumen "pg_db" 
+
+sudo docker network inspect pg_network --format='{{range .Containers}}{{.Name}}{{end}}'     // Muestra una lista de 
+nombres de contenedores que están conectados a la red "pg_network"
+
+sudo docker exec -it pg_server psql -U postgres tarea_db    // Ejecuta una instancia dentro del contenedor llamado
+"pg_server", conectándose con la base de datos "tarea_db" como el usuario "postgres"
+
+CREATE TABLE pg_tabla(id SERIAL PRIMARY KEY,mensaje VARCHAR(300));    // Crea la relación o tabla "pg_tabla"
+
+\d    // Muestra la relaciones o tablas que hay
+
+INSERT INTO pg_tabla(id,mensaje) VALUES (1,'hola mundo');    // Crea un registro en "pg_tabla"
+
+SELECT * FROM pg_tabla;	    // Muestra todos los registros de "pg_tabla"
+
+sudo docker exec -it pg_client psql -h pg_server -p 5432 -U postgres tarea_db   // Ejecuta una instancia dentro de
+"pg_client" y se conecta al servidor PostgreSQL que está en el contenedor "pg_server" en la misma red. La conexión
+se realiza a través del host "pg_server" utilizando el puerto 5432 y autenticándose como el usuario "postgres" en la 
+base de datos "tarea_db". Psql permite interactuar con la base de datos
+
+SELECT * FROM pg_tabla;	    // Muestra todos los registros de "pg_tabla"
+
+sudo docker stop pg_client	    // Detiene un contenedor (pg_client) que esta en ejecución
+
+sudo docker stop pg_server	    // Detiene un contenedor (pg_server) que esta en ejecución
+
+sudo docker rm pg_client	    // Elimina el contendor Docker pg_client
+
+sudo docker rm pg_server	    // Elimina el contenedor Docker pg_server
+
+sudo docker volume rm pg_db	    // Elimina el volumen de Docker pg_db
+
+sudo docker network rm pg_network	   // Elimina la red de Docker pg_network
+
+// Para comprobar que todo se eliminó: 
+
+sudo docker ps -a   // Muestra todos los contenedores Docker, incluidos los que están detenidos
+
+sudo docker volume ls	// Muestra todos los volúmenes de Docker que existen en el sistema
+
+sudo docker network ls	// Muestra todas las redes de Docker que existen en el sistema
